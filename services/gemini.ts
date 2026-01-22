@@ -1,10 +1,22 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+/**
+ * Helper to initialize the Gemini AI client.
+ * Initializing inside functions prevents top-level crashes if process.env.API_KEY 
+ * is not immediately available during module evaluation.
+ */
+const getAiClient = () => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    throw new Error("API_KEY is not defined in the environment.");
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
 export const getDailyHoroscope = async (dayName: string): Promise<string> => {
   try {
+    const ai = getAiClient();
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `คุณคือโหรผู้เชี่ยวชาญ ทำนายดวงรายวันสำหรับคนเกิด "วัน${dayName}" 
@@ -18,12 +30,14 @@ export const getDailyHoroscope = async (dayName: string): Promise<string> => {
     });
     return response.text || "วันนี้คือวันของคุณ จักรวาลกำลังโอบกอดคุณด้วยพลังงานบวก";
   } catch (error) {
-    return "วันนี้คือวันของคุณ จักรวาลกำลังโอบกอดคุณด้วยพลังงานบวก";
+    console.error("Gemini Error (Horoscope):", error);
+    return "วันนี้คือวันของคุณ จักรวาลกำลังโอบกอดคุณด้วยพลังงานบวก (ดวงดาวกำลังปรับจูนพลังงาน)";
   }
 };
 
 export const getTarotReading = async (cardName: string): Promise<string> => {
   try {
+    const ai = getAiClient();
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `คุณคือแม่หมอไพ่ยิปซีผู้มีญาณทิพย์ แปลความหมายของไพ่ '${cardName}' ให้ผู้ใช้อ่านง่ายที่สุด 
@@ -35,12 +49,14 @@ export const getTarotReading = async (cardName: string): Promise<string> => {
     });
     return response.text || "ไพ่ใบนี้แสดงถึงพลังงานแห่งการเปลี่ยนแปลงและการเริ่มต้นใหม่";
   } catch (error) {
+    console.error("Gemini Error (Tarot):", error);
     return "ไพ่ใบนี้แสดงถึงพลังงานแห่งการเปลี่ยนแปลงและการเริ่มต้นใหม่";
   }
 };
 
 export const askOracle = async (question: string): Promise<string> => {
   try {
+    const ai = getAiClient();
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       config: {
@@ -50,12 +66,14 @@ export const askOracle = async (question: string): Promise<string> => {
     });
     return response.text || "จักรวาลยังไม่พร้อมจะตอบในเวลานี้ โปรดลองใหม่อีกครั้ง";
   } catch (error) {
+    console.error("Gemini Error (Oracle):", error);
     return "กระแสพลังงานติดขัด โปรดสงบจิตใจและถามใหม่อีกครั้ง";
   }
 };
 
 export const getLotteryInsight = async (numbers: string): Promise<string> => {
   try {
+    const ai = getAiClient();
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `จงให้คำแนะนำหรือคำอธิบายแบบลึกลับและเป็นมงคลเกี่ยวกับตัวเลขเหล่านี้: ${numbers} 
@@ -63,6 +81,7 @@ export const getLotteryInsight = async (numbers: string): Promise<string> => {
     });
     return response.text || "ตัวเลขเหล่านี้คือรหัสลับจากดวงดาวที่สื่อถึงความมั่งคั่ง";
   } catch (error) {
+    console.error("Gemini Error (Lottery):", error);
     return "ดวงดาวจัดวางตำแหน่งเพื่อส่งเสริมโชคลาภให้แก่คุณ";
   }
 };
